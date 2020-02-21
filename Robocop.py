@@ -56,6 +56,7 @@ initial_extensions = ['cogs.common',
                       'cogs.lockdown',
                       'cogs.legacy',
                       'cogs.links',
+                      'cogs.lists',
                       'cogs.remind',
                       'cogs.robocronp',
                       'cogs.meme']
