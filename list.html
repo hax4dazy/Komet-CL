@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+
+        <title>Komet Text Helper</title>
+
+        <style>
+            html, body {
+                background: #202225;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            .center {
+                align-items: center;
+                display: flex;
+                height: 100%;
+                justify-content: center;
+                width: 100%;
+            }
+
+            textarea {
+                background: #2f3136;
+                border: 0 none;
+                border-radius: 8px;
+                color: #8e9297;
+                display: block;
+                height: 190px;
+                padding: 5px;
+                width: 490px;
+            }
+            
+            button {
+                background: #40444b;
+                border: 0 none;
+                border-radius: 8px;
+                color: #b9bbbe;
+                display: block;
+                height: 44px;
+                margin-top: 5px;
+                text-align: center;
+                width: 500px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="center">
+            <div>
+                <textarea readonly id="content"></textarea>
+                <button id="copy">Copy</button>
+            </div>
+        </div>
+
+        <script>
+            const contentElement = document.querySelector('#content')
+            contentElement.value = new URLSearchParams(window.location.search).get('t')
+            document.querySelector('#copy').addEventListener('click', () => {
+                contentElement.select()
+                document.execCommand('copy')
+            })
+        </script>
+    </body>
+</html>
