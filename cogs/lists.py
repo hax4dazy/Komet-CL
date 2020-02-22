@@ -1,15 +1,18 @@
-import discord
 import config
+import discord
+import io
 import urllib.parse
 from discord.ext.commands import Cog
 
 class Lists(Cog):
     """
-    Manages lists for Rules and Support FAQ
+    Manages channels that are dedicated to lists.
     """
 
     def __init__(self, bot):
         self.bot = bot
+
+    # Helpers
 
     def check_if_target_is_staff(self, target):
         return any(r.id in config.staff_role_ids for r in target.roles)
@@ -58,6 +61,17 @@ class Lists(Cog):
         
         return reactions
 
+    def create_log_message(self, emoji, action, user, channel, reason = ''):
+        msg = f'{emoji} **{action}** \n'\
+            f'from {self.bot.escape_message(user.name)} ({user.id}), in {channel.mention}'
+
+        if reason != '':
+            msg += f':\n`{reason}`'
+        
+        return msg
+
+    # Listeners
+
     @Cog.listener()
     async def on_raw_reaction_add(self, payload):
         await self.bot.wait_until_ready()
@@ -96,14 +110,15 @@ class Lists(Cog):
 
         # When editing we want to provide the user a copy of the raw text.
         if self.is_edit(reaction.emoji):
-            params = {
-                't': message.content
-            }
-            url = f'https://komet.teamatlasnx.com/?{urllib.parse.urlencode(params)}'
+            files_channel = self.bot.get_channel(config.list_files_channel)
+            file = discord.File(io.BytesIO(message.content.encode('utf-8')), filename = f'{message.id}.txt')
+            file_message = await files_channel.send(file = file)
+
             embed = discord.Embed(
                 title = 'Click here to get the raw text to modify.',
-                url = url
+                url = f'{file_message.attachments[0].url}?'
             )
+            embed.add_field(name = "Message ID", value = file_message.id, inline = False)
             await message.edit(embed = embed)
 
     @Cog.listener()
@@ -123,6 +138,17 @@ class Lists(Cog):
 
         # We want to remove the embed we added.
         if self.is_edit(payload.emoji):
+            embeds = message.embeds
+            if len(embeds) == 0:
+                return
+
+            fields = embeds[0].fields
+            for field in fields:
+                if field.name == 'Message ID':
+                    files_channel = self.bot.get_channel(config.list_files_channel)
+                    file_message = await files_channel.fetch_message(int(field.value))
+                    await file_message.delete()
+            
             await message.edit(embed = None)
 
         
@@ -143,6 +169,7 @@ class Lists(Cog):
             await message.delete()
             return
 
+        log_channel = self.bot.get_channel(config.log_channel)
         channel = message.channel
         content = message.content
         user = message.author
@@ -150,11 +177,13 @@ class Lists(Cog):
 
         reactions = await self.find_reactions(user.id, channel.id)
 
-        # Add to the end of the list if there is no reactions or somehow too many??
+        # Add to the end of the list if there is no reactions or somehow more than one.
         if len(reactions) != 1:
             await channel.send(content)
             for reaction in reactions:
                 await reaction.remove(user)
+
+            await log_channel.send(self.create_log_message("💬", "List item added:", user, channel))
             return
 
         targeted_reaction = reactions[0]
@@ -164,25 +193,46 @@ class Lists(Cog):
             await targeted_message.edit(content = content)
             await targeted_reaction.remove(user)
 
+            await log_channel.send(self.create_log_message("📝", "List item edited:", user, channel))
+
         elif self.is_delete(targeted_reaction):
             await targeted_message.delete()
-            await targeted_reaction.remove(user)
+
+            await log_channel.send(self.create_log_message("❌", "List item deleted:", user, channel, content))
 
         elif self.is_recycle(targeted_reaction):
             messages = await channel.history(limit = None, after = targeted_message, oldest_first = True).flatten()
+            await channel.purge(limit = len(messages) + 1, bulk = True)
 
             await channel.send(targeted_message.content)
-            await targeted_message.delete()
-
             for message in messages:
                 await channel.send(message.content)
-                await message.delete()
 
-        # TODO: Insert Above
-        #elif self.is_insert_above(targeted_reaction):
-        # TODO: Insert Below
-        #elif self.is_insert_below(targeted_reaction):
-        
+            await log_channel.send(self.create_log_message("♻", "List item recycled:", user, channel, content))
+
+        elif self.is_insert_above(targeted_reaction):
+            messages = await channel.history(limit = None, after = targeted_message, oldest_first = True).flatten()
+            await channel.purge(limit = len(messages) + 1, bulk = True)
+
+            await channel.send(content)
+            await channel.send(targeted_message.content)
+            for message in messages:
+                self.bot.log.info(message.content)
+                await channel.send(message.content)
+
+            await log_channel.send(self.create_log_message("💬", "List item added:", user, channel))
+
+        elif self.is_insert_below(targeted_reaction):
+            messages = await channel.history(limit = None, after = targeted_message, oldest_first = True).flatten()
+            await channel.purge(limit = len(messages) + 1, bulk = True)
+
+            await channel.send(targeted_message.content)
+            await channel.send(content)
+            for message in messages:
+                self.bot.log.info(message.content)
+                await channel.send(message.content)
+
+            await log_channel.send(self.create_log_message("💬", "List item added:", user, channel))
 
 def setup(bot):
     bot.add_cog(Lists(bot))
