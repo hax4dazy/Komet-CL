@@ -70,6 +70,20 @@ class Lists(Cog):
         
         return msg
 
+    async def clean_up_raw_text(self, message):
+        embeds = message.embeds
+        if len(embeds) == 0:
+            return
+
+        fields = embeds[0].fields
+        for field in fields:
+            if field.name == 'Message ID':
+                files_channel = self.bot.get_channel(config.list_files_channel)
+                file_message = await files_channel.fetch_message(int(field.value))
+                await file_message.delete()
+        
+        await message.edit(embed = None)
+
     # Listeners
 
     @Cog.listener()
@@ -138,20 +152,8 @@ class Lists(Cog):
 
         # We want to remove the embed we added.
         if self.is_edit(payload.emoji):
-            embeds = message.embeds
-            if len(embeds) == 0:
-                return
+            await self.clean_up_raw_text(message)
 
-            fields = embeds[0].fields
-            for field in fields:
-                if field.name == 'Message ID':
-                    files_channel = self.bot.get_channel(config.list_files_channel)
-                    file_message = await files_channel.fetch_message(int(field.value))
-                    await file_message.delete()
-            
-            await message.edit(embed = None)
-
-        
     @Cog.listener()
     async def on_message(self, message):
         await self.bot.wait_until_ready()
@@ -190,6 +192,7 @@ class Lists(Cog):
         targeted_message = targeted_reaction.message
 
         if self.is_edit(targeted_reaction):
+            await self.clean_up_raw_text(targeted_message)
             await targeted_message.edit(content = content)
             await targeted_reaction.remove(user)
 
