@@ -175,13 +175,28 @@ class Lists(Cog):
         channel = message.channel
         content = message.content
         user = message.author
+
+        attachment_filename = None
+        attachment_data = None
+        if len(message.attachments) != 0:
+            # Lists will only reupload images, and only the first one.
+            attachment = next((a for a in message.attachments if a.filename.endswith('.png') or a.filename.endswith('.jpg') or a.filename.endswith('.jpeg')), None)
+            if attachment != None:
+                attachment_filename = attachment.filename
+                attachment_data = await attachment.read()
+
         await message.delete()
 
         reactions = await self.find_reactions(user.id, channel.id)
 
         # Add to the end of the list if there is no reactions or somehow more than one.
         if len(reactions) != 1:
-            await channel.send(content)
+            if attachment_filename != None and attachment_data != None:
+                file = discord.File(io.BytesIO(attachment_data), filename = attachment_filename)
+                await channel.send(content = content, file = file)
+            else:
+                await channel.send(content)
+
             for reaction in reactions:
                 await reaction.remove(user)
 
