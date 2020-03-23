@@ -85,6 +85,11 @@ class Links(Cog):
         """Gives link to source code."""
         await ctx.send(f"You can find my source at {config.source_url}. "
                        "Serious PRs and issues welcome!")
+   
+    @commands.command(hidden=True, aliases=["bootloader"])
+    async def hekate(self, ctx):
+        """Gives link to hekate github page."""
+        await ctx.send("https://github.com/CTCaer/hekate/releases")
 
 def setup(bot):
     bot.add_cog(Links(bot))
