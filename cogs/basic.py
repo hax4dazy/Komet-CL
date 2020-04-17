@@ -18,8 +18,8 @@ class Basic(Cog):
         """Yeet"""
         await ctx.send("For pirated eshop-games you need ES signature patches. As their only purpose is to allow piracy we\'re not providing any help with installation of said patches or pirated games afterwards")
     
-    @commands.command(aliases=['about', 'aboutkosmos'])
-    async def patches(self, ctx):
+    @commands.command(aliases=['aboutkosmos'])
+    async def about(self, ctx):
         """Shows what kosmos is and what it includes"""
         await ctx.send("Kosmos is a CFW bundle that comes with Atmosphere, Hekate, and some homebrew. You can see all the homebrew that is included here: https://github.com/AtlasNX/Kosmos#featuring")
     
