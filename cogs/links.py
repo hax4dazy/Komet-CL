@@ -24,7 +24,7 @@ class Links(Cog):
     @commands.command(hidden=True, aliases=["bootloader"])
     async def hekate(self, ctx):
         """Link to the Hekate repo"""
-        await ctx.send("https://github.com/CTCaer/hekate") 
+        await ctx.send("https://github.com/CTCaer/hekate/release") 
 
     @commands.command(hidden=True, aliases=["xyproblem"])
     async def xy(self, ctx):
