@@ -217,6 +217,5 @@ class ModUserlog(Cog):
                        f"top_role = {role}\n",
                        embed=embed)
 
-
 def setup(bot):
     bot.add_cog(ModUserlog(bot))

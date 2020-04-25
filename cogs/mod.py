@@ -375,6 +375,8 @@ class Mod(Cog):
         if warn_count >= 5:  # just in case
             await target.ban(reason="exceeded warn limit",
                              delete_message_days=0)
+            userlog(target.id, ctx.author, f"exceeded warn limit - {reason}",
+                             "bans", target.name)
         await ctx.send(f"{target.mention} warned. "
                        f"User has {warn_count} warning(s).")
 
@@ -424,6 +426,48 @@ class Mod(Cog):
         Just send .playing to wipe the playing state."""
         if game:
             await self.bot.change_presence(activity=discord.Game(name=game))
+        else:
+            await self.bot.change_presence(activity=None)
+
+        await ctx.send("Successfully set game.")
+
+    @commands.guild_only()
+    @commands.check(check_if_staff)
+    @commands.command(aliases=["setlistening", "setmusic"])
+    async def listening(self, ctx, *, music: str = ""):
+        """Sets the bot's currently listening activity, staff only.
+
+        Just send .listening to wipe the activity."""
+        if music:
+            await self.bot.change_presence(activity=discord.Activity(name=music, type=discord.ActivityType.listening))
+        else:
+            await self.bot.change_presence(activity=None)
+
+        await ctx.send("Successfully set music.")
+
+    @commands.guild_only()
+    @commands.check(check_if_staff)
+    @commands.command(aliases=["setwatching", "setvideo"])
+    async def watching(self, ctx, *, video: str = ""):
+        """Sets the bot's currently watching activity, staff only.
+
+        Just send .watching to wipe the activity."""
+        if video:
+            await self.bot.change_presence(activity=discord.Activity(name=video, type=discord.ActivityType.watching))
+        else:
+            await self.bot.change_presence(activity=None)
+
+        await ctx.send("Successfully set video.")
+
+    @commands.guild_only()
+    @commands.check(check_if_staff)
+    @commands.command(aliases=["setstreaming"])
+    async def streaming(self, ctx, *, game: str = ""):
+        """Sets the bot's currently streaming activity, staff only.
+
+        Just send .streaming to wipe the activity."""
+        if game:
+            await self.bot.change_presence(activity=discord.Activity(name=game, type=discord.ActivityType.streaming))
         else:
             await self.bot.change_presence(activity=None)
 

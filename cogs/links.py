@@ -16,10 +16,15 @@ class Links(Cog):
         """Link to the Pegaswitch repo"""
         await ctx.send("https://github.com/reswitched/pegaswitch")
 
-    @commands.command(hidden=True, aliases=["atmos"])
+    @commands.command(hidden=True, aliases=["atmos", "ams"])
     async def atmosphere(self, ctx):
         """Link to the Atmosphere repo"""
         await ctx.send("https://github.com/atmosphere-nx/atmosphere")
+
+    @commands.command(hidden=True, aliases=["bootloader"])
+    async def hekate(self, ctx):
+        """Link to the Hekate repo"""
+        await ctx.send("https://github.com/CTCaer/hekate/release") 
 
     @commands.command(hidden=True, aliases=["xyproblem"])
     async def xy(self, ctx):
@@ -68,7 +73,12 @@ class Links(Cog):
     @commands.command(hidden=True, aliases=["patron"])
     async def patreon(self, ctx):
         """Link to the patreon"""
-        await ctx.send("https://patreon.teamatlasnx.com")    
+        await ctx.send("https://patreon.teamatlasnx.com")
+
+    @commands.command(hidden=True, aliases=["coffee"])
+    async def kofi(self, ctx):
+        """Link to Ko-fi"""
+        await ctx.send("https://kofi.teamatlasnx.com")
 
     @commands.command(hidden=True, aliases=["sdfiles"])
     async def kosmos(self, ctx):
